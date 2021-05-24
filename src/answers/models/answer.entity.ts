@@ -1,5 +1,6 @@
 import { Choice } from "src/choices/models/choice.entity";
 import { SharedProps } from "src/helpers/sharedProps.helper";
+import { PAPER } from "src/papers/dto/paper.enum";
 import { Question } from "src/questions/models/question.entity";
 import { Quiz } from "src/quiz/models/quiz.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
@@ -9,9 +10,6 @@ export class Answer extends SharedProps{
 
     @PrimaryGeneratedColumn('uuid')
     id:string;
-
-    @Column()
-    answerContent:string;
 
     @Column({default:'No explanation'})
     reason:string;
@@ -36,4 +34,7 @@ export class Answer extends SharedProps{
 
     @Column()
     quizId:string;
+
+    @Column()
+    paperId:PAPER;
 }

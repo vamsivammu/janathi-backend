@@ -10,8 +10,8 @@ export class AnswersService {
         private answersRepo:Repository<Answer>
     ){  }
 
-    addAnswer(answer:Answer):Promise<Answer>{
-        return this.answersRepo.save(answer);
+    async addAnswer(answer:Answer){
+        await this.answersRepo.insert(answer);
     }
 
     updateOne(id:string,answer:Answer){

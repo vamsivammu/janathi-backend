@@ -10,5 +10,6 @@ export interface IQuestion{
     id?:string,
     questionContent:string,
     images?:string[],
-    choices:Choice[]
+    choices:string[],
+    answer:string
 }

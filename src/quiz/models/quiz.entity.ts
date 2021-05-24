@@ -1,8 +1,8 @@
 import { Answer } from "src/answers/models/answer.entity";
 import { Attempt } from "src/attempts/models/attempt.entity";
+import { GROUPS } from "src/chapters/models/chapters.interface";
 import { SharedProps } from "src/helpers/sharedProps.helper";
 import { Question } from "src/questions/models/question.entity";
-import { Section } from "src/sections/models/section.entity";
 import { Video } from "src/videos/models/video.entity";
 import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { QUIZ_TYPE } from "./quiz.interface";
@@ -24,6 +24,9 @@ export class Quiz extends SharedProps{
     @Column({default:3600})
     duration:number;
 
+    @Column({default:GROUPS.GROUP1})
+    category:GROUPS;
+
     @OneToMany(()=>Question,(question:Question)=>question.quiz)
     questions:Question[];
 
@@ -35,8 +38,4 @@ export class Quiz extends SharedProps{
 
     @OneToOne(()=>Video,(video:Video)=>video.quiz)
     video:Video;
-
-    @OneToMany(()=>Section,(section:Section)=>section.quiz)
-    sections:Section[];
-    
 }

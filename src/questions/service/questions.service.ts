@@ -11,12 +11,17 @@ export class QuestionsService {
         private questionRepo:Repository<Question>
     ){  }
     
-    addQuestion(question:Question):Promise<Question>{
-        return this.questionRepo.save(question);
+    async addQuestion(question:Question):Promise<string>{
+        const insertedQuestionResp = await this.questionRepo.insert(question);
+        return insertedQuestionResp.identifiers[0].id;
     }
 
     updateOne(id:string,question:Question):Promise<any>{
         return this.questionRepo.update({id},question);
     }
     
+    getQuestion(id:string):Promise<Question>{
+        return this.questionRepo.findOne(id,{relations:['choices','answer']})
+    }
+
 }

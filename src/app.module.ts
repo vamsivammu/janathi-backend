@@ -13,7 +13,7 @@ import { AttemptsModule } from './attempts/attempts.module';
 import { ChaptersModule } from './chapters/chapters.module';
 import { VideosModule } from './videos/videos.module';
 import { ChoicesModule } from './choices/choices.module';
-import { SectionsModule } from './sections/sections.module';
+import { PapersModule } from './papers/papers.module';
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal:true}),
@@ -27,7 +27,7 @@ import { SectionsModule } from './sections/sections.module';
     ChaptersModule,
     VideosModule,
     ChoicesModule,
-    SectionsModule
+    PapersModule
   ],
   controllers: [AppController],
   providers: [AppService],

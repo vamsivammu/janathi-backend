@@ -1,0 +1,19 @@
+import { IsNotEmpty, IsOptional } from "class-validator";
+import { PAPER } from "src/papers/dto/paper.enum";
+
+export class NewQuestionDto{
+    @IsNotEmpty()
+    questionContent:string;
+    
+    @IsNotEmpty()
+    choices:string[];
+
+    @IsNotEmpty()
+    answer:string;
+    
+    @IsOptional()
+    paperId:PAPER;
+
+    @IsOptional()
+    sectionId:string;
+}

@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { IAnswer } from 'src/answers/models/answer.interface';
+import { GROUPS } from 'src/chapters/models/chapters.interface';
+import { NewQuestionDto } from 'src/questions/dto/NewQuestion.dto';
 import { Question } from 'src/questions/models/question.entity';
-import { IQuestion } from 'src/questions/models/question.interface';
 import { NewQuizDto } from '../dto/NewQuiz.dto';
 import { Quiz } from '../models/quiz.entity';
-import { ICreateQuiz } from '../models/quiz.interface';
+import { IQuiz } from '../models/quiz.interface';
 import { QuizService } from '../service/quiz.service';
 
 @Controller('quiz')
@@ -15,10 +17,20 @@ export class QuizController {
     create(@Body() quiz:NewQuizDto){
         return this.quizService.create(quiz);
     }
+    
+    @Get('list')
+    getAllQuizzes(@Query('groupId') groupId:GROUPS){
+        return this.quizService.getQuizList(groupId);
+    }
+
+    @Get('student/:id')
+    getQuizInfoForStudent(@Param('id',ParseUUIDPipe) quizId:string,@Req() req:Request){
+        
+    }
 
     @Get(':id')
-    findOne(@Param('id',ParseUUIDPipe) id:string):Promise<Quiz>{
-        return this.quizService.findOne(id);
+    async findOne(@Param('id',ParseUUIDPipe) id:string):Promise<IQuiz>{
+        return this.quizService.getQuestionsAndAnswers(id);
     }
 
     @Get(':id/questions')
@@ -32,9 +44,8 @@ export class QuizController {
     }
 
     @Post(':id/add-question')
-    addQuestion(@Param('id',ParseUUIDPipe) id:string,@Body('question') question:IQuestion,@Body('answer') answer:IAnswer):Promise<Question>{
-        console.log(question,answer);
-        return this.quizService.addQuestion(id,question,answer);
+    addQuestion(@Param('id',ParseUUIDPipe) id:string,@Body() question:NewQuestionDto):Promise<Question>{
+        return this.quizService.addQuestion(id,question);
     }
 }
 

@@ -2,7 +2,6 @@ import { Answer } from "src/answers/models/answer.entity";
 import { Choice } from "src/choices/models/choice.entity";
 import { SharedProps } from "src/helpers/sharedProps.helper";
 import { Quiz } from "src/quiz/models/quiz.entity";
-import { Section } from "src/sections/models/section.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -20,12 +19,11 @@ export class Question extends SharedProps{
     @OneToMany(()=>Choice,(choice:Choice)=>choice.question)
     choices:Choice[];
 
-    @ManyToOne(()=>Section,(section:Section)=>section.questions)
-    @JoinColumn({name:'sectionId'})
-    section:Section;
-
-    @Column()
+    @Column({nullable:true})
     sectionId:string;
+
+    @Column({nullable:true})
+    paperId:string;
 
     @ManyToOne(()=>Quiz,(quiz:Quiz)=>quiz.questions)
     @JoinColumn({name:'quizId'})
@@ -37,5 +35,6 @@ export class Question extends SharedProps{
     @OneToOne(()=>Answer,(answer:Answer)=>answer.question)
     answer:Answer;
 
+    
     
 }
