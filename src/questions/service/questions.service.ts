@@ -24,4 +24,20 @@ export class QuestionsService {
         return this.questionRepo.findOne(id,{relations:['choices','answer']})
     }
 
+    getQuestions(quizId:string,paperId:string|null){
+        if(paperId){
+            return this.questionRepo
+                   .createQueryBuilder('question')
+                   .select(['question.id'])
+                   .where('question.quizId = :quizId',{quizId})
+                   .andWhere('question.paperId = :paperId',{paperId})
+                   .getMany();
+        }else{
+            return this.questionRepo
+                   .createQueryBuilder('question')
+                   .select(['question.id'])
+                   .where('question.quizId = :quizId',{quizId})
+                   .getMany();
+        }
+    }
 }

@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Answer } from 'src/answers/models/answer.entity';
 import { AnswersService } from 'src/answers/service/answers.service';
+import { AttemptsService } from 'src/attempts/service/attempts.service';
 import { GROUPS } from 'src/chapters/models/chapters.interface';
 import { ChoicesService } from 'src/choices/service/choices.service';
 import { PaperConfig, SectionConfig } from 'src/papers/dto/paper.enum';
@@ -9,6 +10,7 @@ import { NewQuestionDto } from 'src/questions/dto/NewQuestion.dto';
 import { Question } from 'src/questions/models/question.entity';
 import { QuestionsService } from 'src/questions/service/questions.service';
 import { Repository } from 'typeorm';
+import { NewAttemptDto } from '../dto/NewAttempt.dto';
 import { Quiz } from '../models/quiz.entity';
 import { ICreateQuiz, IQuiz } from '../models/quiz.interface';
 
@@ -20,7 +22,8 @@ export class QuizService {
         private quizRepo:Repository<Quiz>,
         private questionService:QuestionsService,
         private answerService:AnswersService,
-        private choiceService:ChoicesService
+        private choiceService:ChoicesService,
+        private attemptsService:AttemptsService
     ){  }
 
     async create(quiz:ICreateQuiz):Promise<IQuiz>{
@@ -54,9 +57,10 @@ export class QuizService {
         .getOne();
     }
 
-    async getQuizInfo(quizId:string,studentId:string){
+    async getQuizInfoForStudent(quizId:string,studentId:string){
         const quiz = await this.findOne(quizId);
-        
+        const attempts = await this.attemptsService.getAttemptsForOneQuiz(quizId,studentId);
+        return {quiz,attempts};
     }
 
     getQuizList(groupId:GROUPS){
@@ -86,6 +90,20 @@ export class QuizService {
         configuration.paper = PaperConfig[category];
         configuration.section = SectionConfig[category];
         return configuration;
+    }
+
+    async attemptQuiz(quizId:string,userId:string,newAttempt:NewAttemptDto){
+        const pastAttempt = await this.attemptsService.checkIfAlreadyAttempted(quizId,newAttempt.paperId,userId);
+        if(pastAttempt?.id){
+            throw new BadRequestException('Already attempted');
+        }else{
+            try{
+                const attemptId = await this.attemptsService.createAttempt(quizId,newAttempt.paperId,userId);
+                return {attemptId};
+            }catch(err){
+                throw new BadRequestException(err);
+            }
+        }
     }
 
     async addQuestion(id:string,question:NewQuestionDto):Promise<Question>{

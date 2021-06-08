@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnswersModule } from 'src/answers/answers.module';
+import { AttemptsModule } from 'src/attempts/attempts.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { ChoicesModule } from 'src/choices/choices.module';
 import { QuestionsModule } from 'src/questions/questions.module';
@@ -14,7 +15,8 @@ import { QuizService } from './service/quiz.service';
     QuestionsModule,
     AnswersModule,
     AuthModule,
-    ChoicesModule
+    ChoicesModule,
+    AttemptsModule
   ],
   controllers: [QuizController],
   providers: [QuizService],

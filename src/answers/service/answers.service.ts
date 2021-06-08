@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PAPER } from 'src/papers/dto/paper.enum';
 import { Repository } from 'typeorm';
 import { Answer } from '../models/answer.entity';
 
@@ -16,5 +17,20 @@ export class AnswersService {
 
     updateOne(id:string,answer:Answer){
         return this.answersRepo.update({id},answer);
+    }
+
+    getAnswers(quizId:string,paperId:PAPER){
+        if(paperId){
+            return this.answersRepo
+                    .createQueryBuilder('answer')
+                    .where('answer.quizId = :quizId',{quizId})
+                    .andWhere('answer.paperId = :paperId',{paperId})
+                    .getMany();
+        }else{
+            return this.answersRepo
+                    .createQueryBuilder('answer')
+                    .where('answer.quizId = :quizId',{quizId})
+                    .getMany();
+        }
     }
 }

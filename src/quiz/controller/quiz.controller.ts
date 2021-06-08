@@ -4,6 +4,7 @@ import { IAnswer } from 'src/answers/models/answer.interface';
 import { GROUPS } from 'src/chapters/models/chapters.interface';
 import { NewQuestionDto } from 'src/questions/dto/NewQuestion.dto';
 import { Question } from 'src/questions/models/question.entity';
+import { NewAttemptDto } from '../dto/NewAttempt.dto';
 import { NewQuizDto } from '../dto/NewQuiz.dto';
 import { Quiz } from '../models/quiz.entity';
 import { IQuiz } from '../models/quiz.interface';
@@ -25,12 +26,7 @@ export class QuizController {
 
     @Get('student/:id')
     getQuizInfoForStudent(@Param('id',ParseUUIDPipe) quizId:string,@Req() req:Request){
-        
-    }
-
-    @Get(':id')
-    async findOne(@Param('id',ParseUUIDPipe) id:string):Promise<IQuiz>{
-        return this.quizService.getQuestionsAndAnswers(id);
+        return this.quizService.getQuizInfoForStudent(quizId,req.user['id']);        
     }
 
     @Get(':id/questions')
@@ -43,9 +39,23 @@ export class QuizController {
         return this.quizService.getAnswers(id);
     }
 
+    @Get(':id')
+    async findOne(@Param('id',ParseUUIDPipe) id:string):Promise<IQuiz>{
+        return this.quizService.getQuestionsAndAnswers(id);
+    }
+
+
+
     @Post(':id/add-question')
     addQuestion(@Param('id',ParseUUIDPipe) id:string,@Body() question:NewQuestionDto):Promise<Question>{
         return this.quizService.addQuestion(id,question);
     }
+
+    @Post('/attempt/:quizId')
+    attemptQuiz(@Param('quizId',ParseUUIDPipe) quizId:string,@Req() req:Request, newAttempt:NewAttemptDto){
+        return this.quizService.attemptQuiz(quizId,req.user['id'],newAttempt);        
+    }
+
+
 }
 

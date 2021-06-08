@@ -14,6 +14,7 @@ import { ChaptersModule } from './chapters/chapters.module';
 import { VideosModule } from './videos/videos.module';
 import { ChoicesModule } from './choices/choices.module';
 import { PapersModule } from './papers/papers.module';
+import { ResponsesModule } from './responses/responses.module';
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal:true}),
@@ -27,7 +28,8 @@ import { PapersModule } from './papers/papers.module';
     ChaptersModule,
     VideosModule,
     ChoicesModule,
-    PapersModule
+    PapersModule,
+    ResponsesModule
   ],
   controllers: [AppController],
   providers: [AppService],
