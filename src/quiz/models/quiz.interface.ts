@@ -3,8 +3,8 @@ import { Quiz } from "./quiz.entity";
 
 export interface ICreateQuiz{
     name:string,
-    description:string,
-    category:GROUPS
+    category:GROUPS,
+    type:QUIZ_TYPE
 }
 
 export enum QUIZ_TYPE{

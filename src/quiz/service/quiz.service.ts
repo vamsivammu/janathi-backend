@@ -9,10 +9,12 @@ import { PaperConfig, SectionConfig } from 'src/papers/dto/paper.enum';
 import { NewQuestionDto } from 'src/questions/dto/NewQuestion.dto';
 import { Question } from 'src/questions/models/question.entity';
 import { QuestionsService } from 'src/questions/service/questions.service';
+import { S3UploaderService } from 'src/s3-uploader/s3-uploader.service';
+import { UserRole } from 'src/user/models/user.interface';
 import { Repository } from 'typeorm';
 import { NewAttemptDto } from '../dto/NewAttempt.dto';
 import { Quiz } from '../models/quiz.entity';
-import { ICreateQuiz, IQuiz } from '../models/quiz.interface';
+import { ICreateQuiz, IQuiz, QUIZ_TYPE } from '../models/quiz.interface';
 
 @Injectable()
 export class QuizService {
@@ -23,22 +25,27 @@ export class QuizService {
         private questionService:QuestionsService,
         private answerService:AnswersService,
         private choiceService:ChoicesService,
-        private attemptsService:AttemptsService
+        private attemptsService:AttemptsService,
+        private s3UploaderService:S3UploaderService
     ){  }
 
-    async create(quiz:ICreateQuiz):Promise<IQuiz>{
+    async create(quiz:ICreateQuiz){
         try{
             const insertedResp = await this.quizRepo.insert(quiz);
             const id = insertedResp.identifiers[0].id;
-            const newQuiz = await this.quizRepo.findOne(id);
-            return {...newQuiz,configuration:this.getConfiguration(quiz.category)}
+            return {id};
         }catch(e){
             throw new BadRequestException();
         }
     }
 
-    updateOne(id:string,quiz:ICreateQuiz):Promise<any>{
-        return this.quizRepo.update({id},quiz)
+    updateQuizInfo(quizId:string,updatedQuizInfo:{started?:boolean,name?:string,description?:string}){
+        return this.quizRepo
+                .createQueryBuilder('quiz')
+                .update()
+                .set({started:updatedQuizInfo.started})
+                .where('quiz.id = :quizId',{quizId})
+                .execute();
     }
 
     async findOne(id:string):Promise<Quiz>{
@@ -60,13 +67,23 @@ export class QuizService {
     async getQuizInfoForStudent(quizId:string,studentId:string){
         const quiz = await this.findOne(quizId);
         const attempts = await this.attemptsService.getAttemptsForOneQuiz(quizId,studentId);
-        return {quiz,attempts};
+        return {quiz:{...quiz,configuration:this.getConfiguration(quiz.category)},attempts};
     }
 
-    getQuizList(groupId:GROUPS){
+    getQuizList(groupId:GROUPS,type:QUIZ_TYPE,role:UserRole){
+        if(role==UserRole.ADMIN){
+            return this.quizRepo
+            .createQueryBuilder('quiz')
+            .where('quiz.category = :groupId',{groupId})
+            .andWhere('quiz.type = :type',{type})
+            .getMany();    
+        }
+
         return this.quizRepo
         .createQueryBuilder('quiz')
         .where('quiz.category = :groupId',{groupId})
+        .andWhere('quiz.type = :type',{type})
+        .andWhere('quiz.started = :started',{started:true})
         .getMany();
     }
 
@@ -77,6 +94,7 @@ export class QuizService {
         .leftJoinAndSelect('quiz.questions','questions')
         .leftJoinAndSelect('questions.choices','choices')
         .leftJoinAndSelect('questions.answer','answer')
+        .leftJoinAndSelect('quiz.files','files')
         .getOneOrFail();
         return {...quiz,configuration:this.getConfiguration(quiz.category)}
     }
@@ -106,7 +124,7 @@ export class QuizService {
         }
     }
 
-    async addQuestion(id:string,question:NewQuestionDto):Promise<Question>{
+    async addQuestion(id:string,question:NewQuestionDto,files:Express.Multer.File[]):Promise<Question>{
         const quiz = await this.findOne(id);
         const newQuestion = new Question();
         newQuestion.questionContent = question.questionContent;
@@ -114,14 +132,25 @@ export class QuizService {
         newQuestion.paperId = question.paperId;
         newQuestion.sectionId = question.sectionId;
         const createdQuestionId = await this.questionService.addQuestion(newQuestion);
-        const choices = await this.choiceService.insertChoices(question.choices,createdQuestionId);
-        const answerChoice = choices.find(choice=>choice.content==question.answer);
+        let choices:string[];
+        if(question.optionImages){
+            const extensions = files.map(f=>{
+                const arr = f.originalname.split('.');
+                return arr[arr.length-1];
+            });
+            choices = await this.choiceService.insertChoices(extensions,createdQuestionId,true);
+            await this.s3UploaderService.uploadChoiceImages(files,choices,extensions);
+        }else{
+            choices = await this.choiceService.insertChoices(question.choices,createdQuestionId,false);
+        }
+        const answerChoice = choices[question.answer.charCodeAt(0) - 97];
         const newAnswer = new Answer();
         newAnswer.quizId = id;
         newAnswer.questionId = createdQuestionId;
-        newAnswer.choiceId = answerChoice.id;
+        newAnswer.choiceId = answerChoice;
         newAnswer.paperId = question.paperId;
         await this.answerService.addAnswer(newAnswer);
         return this.questionService.getQuestion(createdQuestionId)
     }
+    
 }

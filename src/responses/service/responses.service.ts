@@ -26,27 +26,38 @@ export class ResponsesService {
 
     async saveResponses(responses:any){
         const responseIds = Object.keys(responses);
-        var values = "";
+        var values = ["",""];
+        let respRecords = [];
         for(var i=0;i<responseIds.length;i++){
-            const value = `('${responseIds[i]}','${responses[responseIds[i]]}')`;
-            if(i==0){
-                values = values + value;
-            }else{
-                values = values + ',';
-                values = values + value;
-            }
+            // const value1 = `'${responseIds[i]}'`;
+            // const value2 = `'${responses[responseIds[i]]}'`;
+            // if(i==0){
+            //     values[0] = values[0] + value1;
+            //     values[1] = values[1] + value2;
+            // }else{
+            //     values[0] = values[0] + ',';
+            //     values[1] = values[1] + ',';
+            //     values[0] = values[0] + value1;
+            //     values[1] = values[1] + value2;                
+            // }
+            const r = new Response();
+            r.id = responseIds[i];
+            r.choiceId = responses[responseIds[i]];
+            respRecords.push(r);
         }
-        await this.responseRepo
-        .query(
-            `
-            update Response as r set
-            choiceId = c.choiceId
-            from (values
-             ${values} 
-            ) as c(id,choiceId)
-            where r.id = c.id;
-            `
-        )
+        await this.responseRepo.save(respRecords);
+        // await this.responseRepo
+        // .query(
+        //     `WITH c AS (
+        //         SELECT unnest(array[${values[0]}]) AS id,
+        //               unnest(array[${values[1]}]) AS choiceId
+        //     )
+        //     UPDATE response AS r 
+        //     SET r.choiceId = c.choiceId
+        //     FROM c
+        //     WHERE response.id = c.id::uuid;`
+        // )
+
     }
 
     getResponses(attemptId:string){
@@ -56,5 +67,9 @@ export class ResponsesService {
                 .leftJoinAndSelect('responses.question','question')
                 .leftJoinAndSelect('question.choices','choices')
                 .getMany();
+    }
+
+    async deleteResponses(attemptId:string){
+        await this.responseRepo.delete({attemptId});
     }
 }

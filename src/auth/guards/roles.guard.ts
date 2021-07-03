@@ -7,7 +7,7 @@ import { IUserBody } from "../models/auth.interface";
 import {ROLE_PRIORITIES} from '../../constants'
 @Injectable()
 export class RolesGuard implements CanActivate{
-    constructor(private reflector:Reflector, private userService:UserService){   }
+    constructor(private reflector:Reflector){   }
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const roles = this.reflector.get<UserRole>('roles',context.getHandler());
         
@@ -21,6 +21,7 @@ export class RolesGuard implements CanActivate{
     }
 
     checkRoles(routeRoles:UserRole,userRoles:UserRole){
+        console.log(ROLE_PRIORITIES[userRoles],ROLE_PRIORITIES[routeRoles]);
         return ROLE_PRIORITIES[userRoles]>=ROLE_PRIORITIES[routeRoles];
     }
     

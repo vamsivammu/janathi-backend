@@ -4,10 +4,11 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { ChaptersService } from 'src/chapters/service/chapters.service';
 import { uploadVideo } from 'src/helpers/fileUploader';
+import { PaymentsService } from 'src/payments/service/payments.service';
 import { UserRole } from 'src/user/models/user.interface';
 import { GetVideoDto } from '../dto/GetVideo.dto';
 import { NewVideo } from '../dto/NewVideo.dto';
-import { Video } from '../models/video.entity';
+import { VideoGuard } from '../guards/video.guard';
 import { VideosService } from '../service/videos.service';
 
 @UseGuards(JwtGuard)
@@ -16,7 +17,8 @@ export class VideosController {
 
     constructor(
         private videosService:VideosService,
-        private chaptersService:ChaptersService
+        private chaptersService:ChaptersService,
+        private ps:PaymentsService
     )
     {  }
 
@@ -35,6 +37,7 @@ export class VideosController {
     }
 
     @Get(':videoId')
+    @UseGuards(VideoGuard)
     @Roles(UserRole.USER)
     async getVideo(@Param() params:GetVideoDto){
         return this.videosService.getVideo(params.videoId);

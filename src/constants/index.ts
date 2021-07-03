@@ -7,5 +7,5 @@ export const ROLE_PRIORITIES = {
 }
 
 export const IMAGE_UPLOAD = (id:string,ext:string)=>`https://sg.storage.bunnycdn.com/mandroo-thumbnails/${id}.${ext}`
-export const CREATE_VIDEO = 'https://video.bunnycdn.com/library/2042/videos';
+export const CREATE_VIDEO = 'https://video.bunnycdn.com/library/7978/videos';
 export const VIDEO_UPLOAD = (id:string) => `${CREATE_VIDEO}/${id}`;

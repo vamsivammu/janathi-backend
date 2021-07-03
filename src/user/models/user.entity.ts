@@ -1,4 +1,5 @@
 import { Attempt } from 'src/attempts/models/attempt.entity';
+import { Payment } from 'src/payments/models/payment.entity';
 import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
 import { UserRole } from './user.interface';
 
@@ -28,6 +29,9 @@ export class User{
 
     @OneToMany(()=>Attempt,(attempt:Attempt)=>attempt.user)
     attempts:Attempt[];
+
+    @OneToMany(()=>Payment,(payment:Payment)=>payment.user)
+    payments:Payment[];
 
     
 }

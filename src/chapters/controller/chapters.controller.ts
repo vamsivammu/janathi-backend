@@ -2,7 +2,9 @@ import { Body, Controller, Get, HttpException, HttpStatus, Param, ParseUUIDPipe,
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { uploadImage } from 'src/helpers/fileUploader';
+import { S3UploaderService } from 'src/s3-uploader/s3-uploader.service';
 import { UserRole } from 'src/user/models/user.interface';
 import { GetChaptersDto } from '../dto/getChapters.dto';
 import { GetVideosDto } from '../dto/getVideos.dto';
@@ -11,12 +13,13 @@ import { INewChapter } from '../models/chapters.interface';
 import { ChaptersService } from '../service/chapters.service';
 
 
-@UseGuards(JwtGuard)
+@UseGuards(JwtGuard,RolesGuard)
 @Controller('chapters')
 export class ChaptersController {
 
     constructor(
-        private chaptersService:ChaptersService
+        private chaptersService:ChaptersService,
+        private s3UploaderService:S3UploaderService
     ){  }
 
     @Post()
@@ -24,9 +27,11 @@ export class ChaptersController {
     @UseInterceptors(FileInterceptor('img'))
     async createOne(@UploadedFile() img:Express.Multer.File, @Body() chapter:INewChapter){
         try{
-            const newChapter = await this.chaptersService.createOne(chapter);
+            const arr = img.originalname.split('.');
+            const ext = arr[arr.length - 1];
+            const newChapter = await this.chaptersService.createOne({...chapter,imgExt:ext});
             const id = newChapter.identifiers[0].id;
-            await uploadImage(img,id);
+            await this.s3UploaderService.uploadChapterImage(img,id,ext);
             return newChapter;
         }catch(e){
             throw new HttpException('Unknown error occured',HttpStatus.BAD_REQUEST);
@@ -38,10 +43,14 @@ export class ChaptersController {
     @UseInterceptors(FileInterceptor('img'))
     async updateOne(@Body() chapter:Chapter, @Param('id',ParseUUIDPipe) id:string,@UploadedFile() img?:Express.Multer.File){
         try{
-            await this.chaptersService.updateOne(id,chapter);
-            if(img.buffer.length>0){
-                await uploadImage(img,id);
+            if(img?.buffer?.length>0){
+                const arr = img.originalname.split('.');
+                const ext = arr[arr.length - 1];
+                await this.s3UploaderService.uploadChapterImage(img,id,ext);
+                chapter.imgExt = ext;
             }
+            await this.chaptersService.updateOne(id,chapter);
+            
             return {message:'ok'}
         }catch(e){
             throw new HttpException('Unknown error occured',HttpStatus.BAD_REQUEST);   
@@ -56,7 +65,7 @@ export class ChaptersController {
     }
 
     @Get(':id')
-    @Roles(UserRole.ADMIN)
+    @Roles(UserRole.USER)
     async getVideos(@Param() params:GetVideosDto){
         return this.chaptersService.findOne(params.id);
     }

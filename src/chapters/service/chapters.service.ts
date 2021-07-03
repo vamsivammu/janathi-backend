@@ -55,13 +55,13 @@ export class ChaptersService {
         }
     }
 
-    async createOne(chapter:INewChapter){
+    async createOne(chapter){
         const newChapter = {...chapter};
         return this.chapterRepo.createQueryBuilder('chapter').insert().values(newChapter).execute();
     }
 
     async updateOne(id:string,chapter:Chapter){
-        return this.chapterRepo.update(id,chapter);
+        return this.chapterRepo.update(id,{...chapter});
     }
 
     async isValidChapter(id:string){

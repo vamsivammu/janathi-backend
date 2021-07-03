@@ -5,8 +5,11 @@ export class NewQuestionDto{
     @IsNotEmpty()
     questionContent:string;
     
-    @IsNotEmpty()
-    choices:string[];
+    @IsOptional()
+    choices:any[];
+
+    @IsOptional()
+    optionImages:string;
 
     @IsNotEmpty()
     answer:string;

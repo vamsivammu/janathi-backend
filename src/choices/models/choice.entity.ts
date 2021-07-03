@@ -7,7 +7,7 @@ export class Choice extends SharedProps{
     @PrimaryGeneratedColumn('uuid')
     id:string;
 
-    @Column()
+    @Column({nullable:true})
     content:string;
 
     @Column({nullable:true})

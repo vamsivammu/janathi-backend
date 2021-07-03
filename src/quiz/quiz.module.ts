@@ -5,6 +5,7 @@ import { AttemptsModule } from 'src/attempts/attempts.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { ChoicesModule } from 'src/choices/choices.module';
 import { QuestionsModule } from 'src/questions/questions.module';
+import { S3UploaderService } from 'src/s3-uploader/s3-uploader.service';
 import { QuizController } from './controller/quiz.controller';
 import { Quiz } from './models/quiz.entity';
 import { QuizService } from './service/quiz.service';
@@ -16,10 +17,10 @@ import { QuizService } from './service/quiz.service';
     AnswersModule,
     AuthModule,
     ChoicesModule,
-    AttemptsModule
+    AttemptsModule,
   ],
   controllers: [QuizController],
-  providers: [QuizService],
+  providers: [QuizService,S3UploaderService],
   exports:[QuizService]
 })
 export class QuizModule {}

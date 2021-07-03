@@ -58,6 +58,18 @@ class ConfigService {
   public getBunnyCdnStream():string{
     return this.getValue('BUNNY_CDN_STREAM');
   }
+  public getAwsS3Config(){
+    return {
+      accessKeyId:this.getValue('AWS_KEY'),
+      secretAccessKey:this.getValue('AWS_SECRET_KEY')
+    }
+  }
+  public getStripeTest(){
+    return this.getValue('STRIPE_TEST_KEY');
+  }
+  public getStripeTestSecret(){
+    return this.getValue('STRIPE_TEST_SECRET');
+  }
 }
 
 const configService = new ConfigService(process.env)
@@ -71,7 +83,12 @@ const configService = new ConfigService(process.env)
     'JWT_REFRESH_SECRET',
     'BUNNY_CDN_VIDEO',
     'BUNNY_CDN_STORAGE',
-    'BUNNY_CDN_STREAM'
+    'BUNNY_CDN_STREAM',
+    'AWS_KEY',
+    'AWS_SECRET_KEY',
+    'AWS_BUCKET_NAME',
+    'STRIPE_TEST_KEY',
+    'STRIPE_TEST_SECRET'
   ]);
 
 export { configService };

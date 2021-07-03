@@ -13,6 +13,9 @@ export class Chapter{
     @Column()
     description:string;
 
+    @Column({default:''})
+    imgExt:string;
+
     @Column()
     groupId:GROUPS;
 

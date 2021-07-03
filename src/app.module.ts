@@ -15,6 +15,9 @@ import { VideosModule } from './videos/videos.module';
 import { ChoicesModule } from './choices/choices.module';
 import { PapersModule } from './papers/papers.module';
 import { ResponsesModule } from './responses/responses.module';
+import { S3UploaderService } from './s3-uploader/s3-uploader.service';
+import { PaymentsModule } from './payments/payments.module';
+import { QuizPdfsModule } from './quiz-pdfs/quiz-pdfs.module';
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal:true}),
@@ -26,10 +29,12 @@ import { ResponsesModule } from './responses/responses.module';
     AnswersModule,
     AttemptsModule,
     ChaptersModule,
-    VideosModule,
     ChoicesModule,
     PapersModule,
-    ResponsesModule
+    ResponsesModule,
+    PaymentsModule,
+    VideosModule,
+    QuizPdfsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

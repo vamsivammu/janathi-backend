@@ -40,4 +40,10 @@ export class AuthController {
             throw new UnauthorizedException('Your session is expired');
         }
     }
+
+    @Post('logout')
+    async logout(@Res({passthrough:true}) res:Response){
+        res.cookie('jid',null,{httpOnly:true,maxAge:0,sameSite:'lax',path:'/auth/refresh'});
+        
+    }
 }

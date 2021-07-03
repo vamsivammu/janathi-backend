@@ -10,17 +10,20 @@ export class ChoicesService {
         private choiceRepository:Repository<Choice>
     ){  }
 
-    async insertChoices(choices:string[], questionId:string):Promise<Choice[]>{
+    async insertChoices(choices:string[], questionId:string,areImages:boolean):Promise<string[]>{
         let options:Choice[] = [];
         choices.forEach(choice=>{
             const option = new Choice();
-            option.content = choice;
+            if(areImages){
+                option.imgUrl=choice;
+            }else{
+                option.content = choice;
+            }
             option.questionId = questionId;
             options.push(option);
         })
-        console.log(choices);
         const insertedResponse = await this.choiceRepository.insert(options);
         const choiceIds = insertedResponse.identifiers.map(e=>e.id);
-        return await this.choiceRepository.findByIds(choiceIds);
+        return choiceIds;
     }
 }
