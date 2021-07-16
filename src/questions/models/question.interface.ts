@@ -1,5 +1,3 @@
-import { Choice } from "src/choices/models/choice.entity";
-import { Quiz } from "src/quiz/models/quiz.entity";
 
 export enum QuestionType{
     SUBJECTIVE = 'SUBJECTIVE',

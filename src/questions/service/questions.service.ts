@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from '../models/question.entity';
-import { IQuestion } from '../models/question.interface';
-
 @Injectable()
 export class QuestionsService {
     constructor(
@@ -24,6 +22,14 @@ export class QuestionsService {
         return this.questionRepo.findOne(id,{relations:['choices','answer']})
     }
 
+    softDelete(id:string,isDeleted:boolean){
+        return this.questionRepo.update({id},{isDeleted});
+    }
+
+    async removeQuestion(id:string){
+
+    }
+
     getQuestions(quizId:string,paperId:string|null){
         if(paperId){
             return this.questionRepo
@@ -31,12 +37,14 @@ export class QuestionsService {
                    .select(['question.id'])
                    .where('question.quizId = :quizId',{quizId})
                    .andWhere('question.paperId = :paperId',{paperId})
+                   .andWhere('question.isDeleted = FALSE')
                    .getMany();
         }else{
             return this.questionRepo
                    .createQueryBuilder('question')
                    .select(['question.id'])
                    .where('question.quizId = :quizId',{quizId})
+                   .andWhere('question.isDeleted = FALSE')
                    .getMany();
         }
     }

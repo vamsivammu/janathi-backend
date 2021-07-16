@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -14,15 +15,10 @@ export class UserController {
         return this.userService.create(user);
     }
 
-    @Get()
-    findAll():Promise<IUser[]>{
-        return this.userService.findAll();
-    }
-
     @UseGuards(JwtGuard,RolesGuard)
     @Roles(UserRole.USER)
-    @Get(':id')
-    findOne(@Param('id') id:string):Promise<IUser>{
-        return this.userService.findOne(id);
+    @Get()
+    findOne(@Req() req:Request):Promise<IUser>{
+        return this.userService.findOne(req.user['id']);
     }
 }

@@ -20,12 +20,15 @@ async function bootstrap() {
       'https://verify.stripe.com',
       'https://stripe.com',
       'https://armada.stripe.com',
-      'https://gator.stripe.com'
+      'https://gator.stripe.com',
+      'https://www.mandrooacademy.com',
+      'https://admin.mandrooacademy.com',
+      'https://mandrooacademy.com'
     ],
     credentials:true,exposedHeaders:["set-cookie"]});
   app.useGlobalPipes(new ValidationPipe({forbidNonWhitelisted:true,whitelist:true}));
   app.use(cookieParser());
-  app.use('/stripe-webhook',bp.raw({type:'application/json'}))
-  await app.listen(3001);
+  app.use('/stripe-webhook',bp.raw({type:'application/json'}));
+  await app.listen(process.env.PORT as any || 3001);
 }
 bootstrap();

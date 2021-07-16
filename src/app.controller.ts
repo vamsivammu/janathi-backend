@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { Request } from 'express';
+import { configService } from './config/config.service';
 import { PaymentsService } from './payments/service/payments.service';
 
 @Controller()
@@ -12,7 +13,7 @@ export class AppController {
 
     let event;
     try {
-      event = this.paymentService.stripe.webhooks.constructEvent(req.body, sig, 'whsec_dFZ8Meq0mHVMqzscTwyKdS7nLa9Gg9Fm');
+      event = this.paymentService.stripe.webhooks.constructEvent(req.body, sig, configService.getStripeWebhookSecret());
       return this.paymentService.handleWebhook(event);
     }
     catch (err) {

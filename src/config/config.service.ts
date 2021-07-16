@@ -32,7 +32,7 @@ class ConfigService {
   public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      host: this.getValue('POSTGRES_HOST'),
+      host:this.getValue('POSTGRES_HOST'),
       port: parseInt(this.getValue('POSTGRES_PORT')),
       username: this.getValue('POSTGRES_USER'),
       password: this.getValue('POSTGRES_PASSWORD'),
@@ -70,6 +70,9 @@ class ConfigService {
   public getStripeTestSecret(){
     return this.getValue('STRIPE_TEST_SECRET');
   }
+  public getStripeWebhookSecret(){
+    return this.getValue('STRIPE_WEBHOOK_SECRET');
+  }
 }
 
 const configService = new ConfigService(process.env)
@@ -88,7 +91,8 @@ const configService = new ConfigService(process.env)
     'AWS_SECRET_KEY',
     'AWS_BUCKET_NAME',
     'STRIPE_TEST_KEY',
-    'STRIPE_TEST_SECRET'
+    'STRIPE_TEST_SECRET',
+    'STRIPE_WEBHOOK_SECRET'
   ]);
 
 export { configService };

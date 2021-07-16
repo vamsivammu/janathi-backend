@@ -14,7 +14,7 @@ import { UserRole } from 'src/user/models/user.interface';
 import { Repository } from 'typeorm';
 import { NewAttemptDto } from '../dto/NewAttempt.dto';
 import { Quiz } from '../models/quiz.entity';
-import { ICreateQuiz, IQuiz, QUIZ_TYPE } from '../models/quiz.interface';
+import { ICreateQuiz, QUIZ_TYPE } from '../models/quiz.interface';
 
 @Injectable()
 export class QuizService {

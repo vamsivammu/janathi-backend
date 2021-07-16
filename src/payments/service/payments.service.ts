@@ -138,4 +138,29 @@ export class PaymentsService {
         return activePayments;
     }
 
+    async getActiveSubscriptionDetails(userId:string){
+        const payments = await this.paymentRepo
+                                .createQueryBuilder('payment')
+                                .where('payment.userId = :userId',{userId})
+                                .andWhere('payment.active = TRUE')
+                                .getMany();
+    
+        const expiredIds = [];
+        const activePayments = [];
+        payments.forEach(payment=>{
+            const tim = new Date().getTime() - new Date(payment.updated_at).getTime();
+            if(tim/(86400*1000) > 30){
+                expiredIds.push(payment.sessionId);
+            }else{
+                activePayments.push(payment);
+            }
+        });
+        console.log(expiredIds);
+        if(expiredIds.length>0){
+            this.updatePaymentInactive(expiredIds);        
+        }   
+        return activePayments;
+    }
+
+
 }

@@ -6,7 +6,7 @@ import { Payment } from './models/payment.entity';
 import { PaymentsService } from './service/payments.service';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Payment]),UserModule],
+  imports:[TypeOrmModule.forFeature([Payment]),forwardRef(()=>UserModule)],
   controllers: [PaymentsController],
   providers: [PaymentsService],
   exports:[PaymentsService]

@@ -35,6 +35,7 @@ export class Question extends SharedProps{
     @OneToOne(()=>Answer,(answer:Answer)=>answer.question)
     answer:Answer;
 
-    
+    @Column({default:false})
+    isDeleted:boolean;
     
 }
