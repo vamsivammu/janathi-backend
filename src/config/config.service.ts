@@ -58,6 +58,9 @@ class ConfigService {
   public getBunnyCdnStream():string{
     return this.getValue('BUNNY_CDN_STREAM');
   }
+  public getBunnyCdnVideoLibraryId():string{
+    return this.getValue('BUNNY_CDN_VIDEO_LIBRARY_ID');
+  }
   public getAwsS3Config(){
     return {
       accessKeyId:this.getValue('AWS_KEY'),
@@ -87,6 +90,7 @@ const configService = new ConfigService(process.env)
     'BUNNY_CDN_VIDEO',
     'BUNNY_CDN_STORAGE',
     'BUNNY_CDN_STREAM',
+    'BUNNY_CDN_VIDEO_LIBRARY_ID',
     'AWS_KEY',
     'AWS_SECRET_KEY',
     'AWS_BUCKET_NAME',

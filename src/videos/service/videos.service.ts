@@ -30,16 +30,26 @@ export class VideosService {
 
     private getSignedUrl(videoId:string){
         const securityKey = configService.getBunnyCdnStream();
-        const url = `https://iframe.mediadelivery.net/embed/2042/${videoId}`;
-        let hashableBase = "";
-        let token = "";
+        const url = `https://iframe.mediadelivery.net/embed/${configService.getBunnyCdnVideoLibraryId()}/${videoId}`;
+        return url;
+        // let hashableBase = "";
+        // let token = "";
+        // let currSeconds = (new Date()).getTime()/1000;
+        // let expires = Math.floor(currSeconds) + 3600;
+        // hashableBase = securityKey + videoId + expires;
+        // token = crypto.createHash("sha256").update(hashableBase).digest('hex');
+        // return url + "?token=" + token + "&expires=" + expires;
+    }
+    private getCdnAuthUrl(videoId:string){
+        var hashableBase = "", token = "";
+        const securityKey = configService.getBunnyCdnStream();
         let currSeconds = (new Date()).getTime()/1000;
         let expires = Math.floor(currSeconds) + 3600;
-        hashableBase = securityKey + videoId + expires;
-        token = crypto.createHash("sha256").update(hashableBase).digest('hex');
-        return url + "?token=" + token + "&expires=" + expires;
+        hashableBase = securityKey + `/embed/${configService.getBunnyCdnVideoLibraryId()}/${videoId}` + expires;
+        token = Buffer.from(crypto.createHash("sha256").update(hashableBase).digest()).toString('base64');
+        token = token.replace(/\n/g, "").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+        return 'https://iframe.mediadelivery.net/embed/' + configService.getBunnyCdnVideoLibraryId() + "/" + videoId + "?token=" + token + "&expires=" + expires ;
     }
-
     async createOne(videoDetails:NewVideo, chapter:Chapter){
         const newVideo = this.videoRepo.create();
         newVideo.name = videoDetails.name;

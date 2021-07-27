@@ -31,14 +31,15 @@ export class ChaptersService {
     }
 
     getSignedThumbnail(videoId:string){
-        var hashableBase = "", token = "";
-        const securityKey = configService.getBunnyCdnStream();
-        let currSeconds = (new Date()).getTime()/1000;
-        let expires = Math.floor(currSeconds) + 3600;
-        hashableBase = securityKey + `/${videoId}/thumbnail.jpg` + expires;
-        token = Buffer.from(crypto.createHash("sha256").update(hashableBase).digest()).toString('base64');
-        token = token.replace(/\n/g, "").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-        return 'https://vz-a2e716ad-98f.b-cdn.net/bcdn_token='+token+'&expires='+expires+'/'+videoId+'/thumbnail.jpg';
+        // var hashableBase = "", token = "";
+        // const securityKey = configService.getBunnyCdnStream();
+        // let currSeconds = (new Date()).getTime()/1000;
+        // let expires = Math.floor(currSeconds) + 3600;
+        // hashableBase = securityKey + `/${videoId}/thumbnail.jpg` + expires;
+        // token = Buffer.from(crypto.createHash("sha256").update(hashableBase).digest()).toString('hex');
+        // token = token.replace(/\n/g, "").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+        // return 'https://vz-d13118e8-7f8.b-cdn.net/bcdn_token='+token+'&expires='+expires+'/'+videoId+'/thumbnail.jpg';
+        return `https://vz-d13118e8-7f8.b-cdn.net/${videoId}/thumbnail.jpg`;
     }
 
     async getChaptersByGroupId(groupId:GROUPS):Promise<Chapter[]>{
