@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {S3} from 'aws-sdk';
 import { configService } from 'src/config/config.service';
 import * as resizeImg from 'resize-image-buffer';
+import { Choice } from 'src/choices/models/choice.entity';
 
 @Injectable()
 export class S3UploaderService {
@@ -25,6 +26,13 @@ export class S3UploaderService {
         await this.uploadFile(files[1],choiceIds[1],extensions[1]);
         await this.uploadFile(files[2],choiceIds[2],extensions[2]);
         await this.uploadFile(files[3],choiceIds[3],extensions[3]);
+    }
+
+    async uploadQuestionImages(files:Express.Multer.File[], questionId:string,extensions:string[]){
+        await this.uploadFile(files[0],`${questionId}_1`,extensions[0]);
+        if(extensions.length>1){
+            await this.uploadFile(files[1],`${questionId}_2`,extensions[1]);
+        }
     }
 
     async uploadQuizPdf(file:Express.Multer.File,name:string){
@@ -55,4 +63,27 @@ export class S3UploaderService {
         await this.s3.upload(params2).promise();
     }
 
+    async deleteQuestionImageAndChoiceImages(questionId:string,qExt:string[],choices:Choice[]){
+        
+        let keys = [];
+        qExt.forEach((ext,i)=>{
+            keys.push({Key:`${questionId}_${i+1}.${ext}`});
+        })
+        choices.forEach((choice)=>{
+            if(choice.imgUrl){
+                keys.push({Key:`${choice.id}.${choice.imgUrl}`});
+            }
+        })
+        const params1 = {
+            Bucket:'janathi-images',
+            Delete:{
+                Objects:keys
+            }
+        };
+        await this.s3.deleteObjects(params1).promise().then(res=>{
+            console.log(res);
+        }).catch(err=>{
+            console.log(err);
+        });
+    }
 }

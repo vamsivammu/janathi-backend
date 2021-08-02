@@ -33,4 +33,8 @@ export class AnswersService {
                     .getMany();
         }
     }
+
+    async deleteAnswer(questionId:string){
+        await this.answersRepo.delete({questionId});
+    }
 }

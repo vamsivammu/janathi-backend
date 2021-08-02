@@ -10,13 +10,13 @@ export class Question extends SharedProps{
     @PrimaryGeneratedColumn('uuid')
     id:string;
 
-    @Column()
+    @Column({nullable:true})
     questionContent:string;
 
     @Column({type:'varchar',array:true,default: ()=>'array[]::varchar[]'})
     images:string[];
 
-    @OneToMany(()=>Choice,(choice:Choice)=>choice.question)
+    @OneToMany(()=>Choice,(choice:Choice)=>choice.question,{onDelete:'CASCADE'})
     choices:Choice[];
 
     @Column({nullable:true})
@@ -32,7 +32,7 @@ export class Question extends SharedProps{
     @Column()
     quizId:string;
 
-    @OneToOne(()=>Answer,(answer:Answer)=>answer.question)
+    @OneToOne(()=>Answer,(answer:Answer)=>answer.question,{onDelete:'CASCADE'})
     answer:Answer;
 
     @Column({default:false})

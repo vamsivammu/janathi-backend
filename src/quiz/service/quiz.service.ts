@@ -95,6 +95,8 @@ export class QuizService {
         .leftJoinAndSelect('questions.choices','choices')
         .leftJoinAndSelect('questions.answer','answer')
         .leftJoinAndSelect('quiz.files','files')
+        .orderBy('questions.isDeleted','DESC')
+        .addOrderBy('questions.created_at','ASC')
         .getOneOrFail();
         return {...quiz,configuration:this.getConfiguration(quiz.category)}
     }
@@ -124,22 +126,35 @@ export class QuizService {
         }
     }
 
-    async addQuestion(id:string,question:NewQuestionDto,files:Express.Multer.File[]):Promise<Question>{
+    async addQuestion(id:string,question:NewQuestionDto,files:{'qimages[]':Express.Multer.File[],'choices[]':Express.Multer.File[]}):Promise<Question>{
         const quiz = await this.findOne(id);
         const newQuestion = new Question();
         newQuestion.questionContent = question.questionContent;
         newQuestion.quiz = quiz;
         newQuestion.paperId = question.paperId;
         newQuestion.sectionId = question.sectionId;
+        
         const createdQuestionId = await this.questionService.addQuestion(newQuestion);
         let choices:string[];
+
+        if(question.questionImages){
+            const questionFiles = files['qimages[]'];
+            const questionExtensions = questionFiles.map(f=>{
+                const arr = f.originalname.split('.');
+                console.log(arr);
+                return arr[arr.length-1];
+            });
+            await this.s3UploaderService.uploadQuestionImages(questionFiles,createdQuestionId,questionExtensions);
+            await this.questionService.updateQImages(questionExtensions,createdQuestionId);
+        }
         if(question.optionImages){
-            const extensions = files.map(f=>{
+            const choiceFiles = files['choices[]'];
+            const choiceExtensions = choiceFiles.map(f=>{
                 const arr = f.originalname.split('.');
                 return arr[arr.length-1];
             });
-            choices = await this.choiceService.insertChoices(extensions,createdQuestionId,true);
-            await this.s3UploaderService.uploadChoiceImages(files,choices,extensions);
+            choices = await this.choiceService.insertChoices(choiceExtensions,createdQuestionId,true);
+            await this.s3UploaderService.uploadChoiceImages(choiceFiles,choices,choiceExtensions);
         }else{
             choices = await this.choiceService.insertChoices(question.choices,createdQuestionId,false);
         }

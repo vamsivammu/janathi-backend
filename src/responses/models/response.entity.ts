@@ -23,7 +23,7 @@ export class Response{
     @Column({nullable:true})
     choiceId:string;
 
-    @ManyToOne(()=>Question)
+    @ManyToOne(()=>Question,{onDelete:'CASCADE'})
     @JoinColumn()
     question:Question;
 

@@ -21,7 +21,7 @@ export class Answer extends SharedProps{
     @Column()
     choiceId:string;
 
-    @OneToOne(()=>Question)
+    @OneToOne(()=>Question,{onDelete:'CASCADE'})
     @JoinColumn({name:'questionId'})
     question:Question;
 

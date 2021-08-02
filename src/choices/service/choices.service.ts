@@ -26,4 +26,8 @@ export class ChoicesService {
         const choiceIds = insertedResponse.identifiers.map(e=>e.id);
         return choiceIds;
     }
+
+    async deleteChoices(questionId:string){
+        await this.choiceRepository.delete({questionId});
+    }
 }

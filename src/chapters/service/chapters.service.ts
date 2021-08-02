@@ -4,7 +4,7 @@ import { configService } from 'src/config/config.service';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
 import { Chapter } from '../models/chapter.entity';
-import { GROUPS, INewChapter } from '../models/chapters.interface';
+import { GROUPS, INewChapter, IUpdateChapter } from '../models/chapters.interface';
 
 @Injectable()
 export class ChaptersService {
@@ -61,7 +61,7 @@ export class ChaptersService {
         return this.chapterRepo.createQueryBuilder('chapter').insert().values(newChapter).execute();
     }
 
-    async updateOne(id:string,chapter:Chapter){
+    async updateOne(id:string,chapter:IUpdateChapter){
         return this.chapterRepo.update(id,{...chapter});
     }
 

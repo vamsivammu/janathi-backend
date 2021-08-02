@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { AttemptsService } from 'src/attempts/service/attempts.service';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -79,8 +79,8 @@ export class QuizController {
 
     @Post(':id/add-question')
     @Roles(UserRole.ADMIN)
-    @UseInterceptors(FilesInterceptor('choices[]',4))
-    addQuestion(@Param('id',ParseUUIDPipe) id:string,@UploadedFiles() files:Express.Multer.File[],@Body() question:NewQuestionDto):Promise<Question>{
+    @UseInterceptors(FileFieldsInterceptor([{name:'choices[]',maxCount:4},{name:'qimages[]',maxCount:2}]))
+    addQuestion(@Param('id',ParseUUIDPipe) id:string,@UploadedFiles() files:any,@Body() question:NewQuestionDto):Promise<Question>{
         return this.quizService.addQuestion(id,question,files);
     }
 

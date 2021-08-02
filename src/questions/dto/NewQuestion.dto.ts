@@ -11,6 +11,9 @@ export class NewQuestionDto{
     @IsOptional()
     optionImages:string;
 
+    @IsOptional()
+    questionImages:string;
+
     @IsNotEmpty()
     answer:string;
     

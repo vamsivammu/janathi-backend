@@ -34,6 +34,6 @@ export class QuestionsController {
     @Delete(':id')
     @Roles(UserRole.ADMIN)
     async removeQuestion(@Param('id',ParseUUIDPipe) id:string){
-        
+        return this.questionsService.removeQuestion(id);
     }
 }

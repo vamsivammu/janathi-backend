@@ -9,7 +9,7 @@ import { UserRole } from 'src/user/models/user.interface';
 import { GetChaptersDto } from '../dto/getChapters.dto';
 import { GetVideosDto } from '../dto/getVideos.dto';
 import { Chapter } from '../models/chapter.entity';
-import { INewChapter } from '../models/chapters.interface';
+import { INewChapter, IUpdateChapter } from '../models/chapters.interface';
 import { ChaptersService } from '../service/chapters.service';
 
 
@@ -40,17 +40,9 @@ export class ChaptersController {
 
     @Patch(':id')
     @Roles(UserRole.ADMIN)
-    @UseInterceptors(FileInterceptor('img'))
-    async updateOne(@Body() chapter:Chapter, @Param('id',ParseUUIDPipe) id:string,@UploadedFile() img?:Express.Multer.File){
+    async updateOne(@Body() chapter:IUpdateChapter, @Param('id',ParseUUIDPipe) id:string){
         try{
-            if(img?.buffer?.length>0){
-                const arr = img.originalname.split('.');
-                const ext = arr[arr.length - 1];
-                await this.s3UploaderService.uploadChapterImage(img,id,ext);
-                chapter.imgExt = ext;
-            }
             await this.chaptersService.updateOne(id,chapter);
-            
             return {message:'ok'}
         }catch(e){
             throw new HttpException('Unknown error occured',HttpStatus.BAD_REQUEST);   

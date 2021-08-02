@@ -30,15 +30,14 @@ export class VideosService {
 
     private getSignedUrl(videoId:string){
         const securityKey = configService.getBunnyCdnStream();
-        const url = `https://iframe.mediadelivery.net/embed/${configService.getBunnyCdnVideoLibraryId()}/${videoId}`;
-        return url;
-        // let hashableBase = "";
-        // let token = "";
-        // let currSeconds = (new Date()).getTime()/1000;
-        // let expires = Math.floor(currSeconds) + 3600;
-        // hashableBase = securityKey + videoId + expires;
-        // token = crypto.createHash("sha256").update(hashableBase).digest('hex');
-        // return url + "?token=" + token + "&expires=" + expires;
+        const url = `https://vz-d13118e8-7f8.b-cdn.net/${videoId}/playlist.m3u8`;
+        let currSeconds = (new Date()).getTime()/1000;
+        let expires = Math.floor(currSeconds) + 3600;
+        let hashableBase = securityKey + `/${videoId}/` + expires + `token_path=/${videoId}/`;
+        let token = Buffer.from(crypto.createHash("sha256").update(hashableBase).digest()).toString('base64');
+        token = token.replace(/\n/g, "").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+        // return `${url}?token=${token}&expires=${expires}&token_path=/${videoId}/`;
+        return `https://vz-d13118e8-7f8.b-cdn.net/bcdn_token=${token}&expires=${expires}&token_path=%2F${videoId}%2F/${videoId}/playlist.m3u8`;
     }
     private getCdnAuthUrl(videoId:string){
         var hashableBase = "", token = "";

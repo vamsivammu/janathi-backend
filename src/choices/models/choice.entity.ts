@@ -13,8 +13,7 @@ export class Choice extends SharedProps{
     @Column({nullable:true})
     imgUrl:string;
 
-
-    @ManyToOne(()=>Question,(question:Question)=>question.choices)
+    @ManyToOne(()=>Question,(question:Question)=>question.choices,{onDelete:'CASCADE'})
     @JoinColumn({name:'questionId'})
     question:Question;
 

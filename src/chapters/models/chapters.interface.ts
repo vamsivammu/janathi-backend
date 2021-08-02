@@ -10,3 +10,8 @@ export interface INewChapter{
     description:string,
     groupId:GROUPS
 }
+
+export interface IUpdateChapter{
+    name:string;
+    description:string;
+}
