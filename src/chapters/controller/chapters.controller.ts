@@ -49,7 +49,6 @@ export class ChaptersController {
         }
     }
 
-    
     @Get()
     @Roles(UserRole.USER)
     async getChapters(@Query() queryParams:GetChaptersDto){

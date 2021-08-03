@@ -5,10 +5,16 @@ export enum GROUPS{
     CONSTABLE = 'Constable'
 }
 
+export enum VIDEO_GROUPS{
+    GROUP12 = 'Group 1,2',
+    SI = 'S.I',
+    CONSTABLE = 'Constable'
+}
+
 export interface INewChapter{
     name:string,
     description:string,
-    groupId:GROUPS
+    groupId:VIDEO_GROUPS
 }
 
 export interface IUpdateChapter{

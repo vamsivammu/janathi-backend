@@ -1,6 +1,6 @@
 import { Video } from "src/videos/models/video.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { GROUPS } from "./chapters.interface";
+import { GROUPS, VIDEO_GROUPS } from "./chapters.interface";
 
 @Entity()
 export class Chapter{
@@ -17,7 +17,7 @@ export class Chapter{
     imgExt:string;
 
     @Column()
-    groupId:GROUPS;
+    groupId:VIDEO_GROUPS;
 
     @OneToMany(()=>Video,(video:Video)=>video.chapter)
     videos:Video[];

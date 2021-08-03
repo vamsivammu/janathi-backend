@@ -1,6 +1,6 @@
 import {IsEnum} from 'class-validator';
-import { GROUPS } from '../models/chapters.interface';
+import { VIDEO_GROUPS } from '../models/chapters.interface';
 export class GetChaptersDto{
-    @IsEnum(GROUPS)
-    groupId:GROUPS;
+    @IsEnum(VIDEO_GROUPS)
+    groupId:VIDEO_GROUPS;
 }

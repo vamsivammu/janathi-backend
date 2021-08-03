@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { GROUPS, VIDEO_GROUPS } from 'src/chapters/models/chapters.interface';
 import { configService } from 'src/config/config.service';
 import { UserService } from 'src/user/service/user.service';
 import {Stripe} from 'stripe';
 import { Repository } from 'typeorm';
-import { Plans } from '../dto/payment.enum';
+import { planPrices, Plans, planTitles } from '../dto/payment.enum';
 import { Payment } from '../models/payment.entity';
 
 @Injectable()
@@ -20,7 +21,7 @@ export class PaymentsService {
 
     async initPayment(userId:string,subscription:Plans){
         const prevPayments = await this.getPrevPayments(userId,subscription);
-        console.log(prevPayments);
+        // console.log(prevPayments);
         if(prevPayments){
             throw new BadRequestException('Already purchased');
         }
@@ -30,17 +31,17 @@ export class PaymentsService {
      async createSession(userId:string,subscription:Plans){
         const userData = await this.userService.findOne(userId);
         const params:Stripe.Checkout.SessionCreateParams = {
-            success_url:`http://localhost:3000/paymentStatus?success=true`,
-            cancel_url:`http://localhost:3000/paymentStatus?failure=true`,
+            success_url:`${configService.getStripeRedirectUrl()}/paymentStatus?success=true`,
+            cancel_url:`${configService.getStripeRedirectUrl()}/paymentStatus?failure=true`,
             mode:'payment',
             customer_email:userData.email,
             line_items:[
                 {
                     price_data:{
                         currency:'INR',
-                        unit_amount:99900,
+                        unit_amount:planPrices[subscription].price*100,
                         product_data:{
-                            name:subscription,
+                            name:planTitles[subscription],
                         },
                     },
                     quantity:1,
@@ -53,11 +54,11 @@ export class PaymentsService {
         return {sessionId:resp.id};
     }
 
-     updatePaymentSuccess(sessionId:string){
+    updatePaymentSuccess(sessionId:string){
         this.paymentRepo.update({sessionId},{success:true,pending:false,active:true});
     }
 
-     updatePaymentFailure(sessionId:string){
+    updatePaymentFailure(sessionId:string){
         this.paymentRepo.update({sessionId},{success:false,pending:false,active:false});
     }
 
@@ -70,7 +71,7 @@ export class PaymentsService {
         .execute();
     }
 
-     insertPayment(sessionId:string,userId:string,subscription:Plans){
+    insertPayment(sessionId:string,userId:string,subscription:Plans){
         const payment = new Payment();
         payment.userId = userId;
         payment.sessionId = sessionId;
@@ -82,7 +83,7 @@ export class PaymentsService {
 
     }
 
-     getPrevPayments(userId:string,subscription:Plans){
+    getPrevPayments(userId:string,subscription:Plans){
         return this.paymentRepo
                 .createQueryBuilder('payment')
                 .where('payment.userId = :userId',{userId})
@@ -120,7 +121,6 @@ export class PaymentsService {
                                 .andWhere('payment.active = TRUE')
                                 .getMany();
         
-    
         const expiredIds = [];
         const activePayments = [];
         payments.forEach(payment=>{
@@ -160,6 +160,10 @@ export class PaymentsService {
             this.updatePaymentInactive(expiredIds);        
         }   
         return activePayments;
+    }
+
+    async hasVideoSubscription(userId:string, groupId:VIDEO_GROUPS){
+        
     }
 
 

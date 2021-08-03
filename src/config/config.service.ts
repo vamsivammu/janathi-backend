@@ -76,6 +76,9 @@ class ConfigService {
   public getStripeWebhookSecret(){
     return this.getValue('STRIPE_WEBHOOK_SECRET');
   }
+  public getStripeRedirectUrl(){
+    return this.getValue('STRIPE_REDIRECT_URL');
+  }
 }
 
 const configService = new ConfigService(process.env)
@@ -96,7 +99,8 @@ const configService = new ConfigService(process.env)
     'AWS_BUCKET_NAME',
     'STRIPE_TEST_KEY',
     'STRIPE_TEST_SECRET',
-    'STRIPE_WEBHOOK_SECRET'
+    'STRIPE_WEBHOOK_SECRET',
+    'STRIPE_REDIRECT_URL'
   ]);
 
 export { configService };

@@ -1,10 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { configService } from 'src/config/config.service';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
 import { Chapter } from '../models/chapter.entity';
-import { GROUPS, INewChapter, IUpdateChapter } from '../models/chapters.interface';
+import { GROUPS, INewChapter, IUpdateChapter, VIDEO_GROUPS } from '../models/chapters.interface';
 
 @Injectable()
 export class ChaptersService {
@@ -15,12 +14,12 @@ export class ChaptersService {
 
     async findOne(id:string):Promise<Chapter>{
         try{
-            const chapter = await this.chapterRepo.
-            createQueryBuilder('chapter').
-            leftJoinAndSelect('chapter.videos','video').
-            where('chapter.id = :id',{id}).
-            loadRelationCountAndMap('chapter.videoCount','chapter.videos').
-            getOneOrFail();
+            const chapter = await this.chapterRepo
+            .createQueryBuilder('chapter')
+            .leftJoinAndSelect('chapter.videos','video')
+            .where('chapter.id = :id',{id})
+            .loadRelationCountAndMap('chapter.videoCount','chapter.videos')
+            .getOneOrFail();
             chapter.videos.forEach(video=>{
                 video.thumbnail = this.getSignedThumbnail(video.videoStorageId);
             })
@@ -42,7 +41,7 @@ export class ChaptersService {
         return `https://vz-d13118e8-7f8.b-cdn.net/${videoId}/thumbnail.jpg`;
     }
 
-    async getChaptersByGroupId(groupId:GROUPS):Promise<Chapter[]>{
+    async getChaptersByGroupId(groupId:VIDEO_GROUPS):Promise<Chapter[]>{
         try{
             const chapters = await this.chapterRepo.
             createQueryBuilder('chapter').
