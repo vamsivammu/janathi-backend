@@ -2,10 +2,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GROUPS, VIDEO_GROUPS } from 'src/chapters/models/chapters.interface';
 import { configService } from 'src/config/config.service';
+import { SubscriptionsService } from 'src/subscriptions/service/subscriptions.service';
 import { UserService } from 'src/user/service/user.service';
 import {Stripe} from 'stripe';
-import { Repository } from 'typeorm';
-import { planPrices, Plans, planTitles } from '../dto/payment.enum';
+import { getManager, Repository } from 'typeorm';
+import { planPrices, Plans, planTitles, VIDEO_PLAN_MAP } from '../dto/payment.enum';
 import { Payment } from '../models/payment.entity';
 
 @Injectable()
@@ -14,7 +15,8 @@ export class PaymentsService {
     constructor(
         private userService:UserService,
         @InjectRepository(Payment)
-        private paymentRepo:Repository<Payment>
+        private paymentRepo:Repository<Payment>,
+        private subscriptionsService:SubscriptionsService
     ){
         this.stripe = new Stripe(configService.getStripeTestSecret(),{typescript:true,apiVersion:null});
     }
@@ -22,13 +24,13 @@ export class PaymentsService {
     async initPayment(userId:string,subscription:Plans){
         const prevPayments = await this.getPrevPayments(userId,subscription);
         // console.log(prevPayments);
-        if(prevPayments){
+        if(prevPayments.length>0){
             throw new BadRequestException('Already purchased');
         }
         return this.createSession(userId,subscription);    
     }
 
-     async createSession(userId:string,subscription:Plans){
+    async createSession(userId:string,subscription:Plans){
         const userData = await this.userService.findOne(userId);
         const params:Stripe.Checkout.SessionCreateParams = {
             success_url:`${configService.getStripeRedirectUrl()}/paymentStatus?success=true`,
@@ -54,11 +56,13 @@ export class PaymentsService {
         return {sessionId:resp.id};
     }
 
-    updatePaymentSuccess(sessionId:string){
+    async updatePaymentSuccess(sessionId:string){
+        const paymentData = await this.paymentRepo.findOne({sessionId});
         this.paymentRepo.update({sessionId},{success:true,pending:false,active:true});
+        this.subscriptionsService.insertSubscription(paymentData);
     }
 
-    updatePaymentFailure(sessionId:string){
+    async updatePaymentFailure(sessionId:string){
         this.paymentRepo.update({sessionId},{success:false,pending:false,active:false});
     }
 
@@ -83,13 +87,10 @@ export class PaymentsService {
 
     }
 
-    getPrevPayments(userId:string,subscription:Plans){
-        return this.paymentRepo
-                .createQueryBuilder('payment')
-                .where('payment.userId = :userId',{userId})
-                .andWhere('payment.subscription = :subscription',{subscription})
-                .andWhere('payment.active = TRUE')
-                .getOne();
+    async getPrevPayments(userId:string,subscription:Plans){
+        const currDate = new Date();
+        const prevPlans = await getManager().query(`select * from "subscription_view" where "userId"=$1 and "planId"=$2 and "endTimestamp" > $3`,[userId,subscription,currDate]);
+        return prevPlans;
     }
 
     handleWebhook(event:any){
@@ -113,58 +114,5 @@ export class PaymentsService {
         }
 
     }
-
-    async getActiveSubscriptions(userId:string){
-        const payments = await this.paymentRepo
-                                .createQueryBuilder('payment')
-                                .where('payment.userId = :userId',{userId})
-                                .andWhere('payment.active = TRUE')
-                                .getMany();
-        
-        const expiredIds = [];
-        const activePayments = [];
-        payments.forEach(payment=>{
-            const tim = new Date().getTime() - new Date(payment.updated_at).getTime();
-            if(tim/(86400*1000) > 30){
-                expiredIds.push(payment.sessionId);
-            }else{
-                activePayments.push(payment.subscription);
-            }
-        });
-        console.log(expiredIds);
-        if(expiredIds.length>0){
-            this.updatePaymentInactive(expiredIds);        
-        }   
-        return activePayments;
-    }
-
-    async getActiveSubscriptionDetails(userId:string){
-        const payments = await this.paymentRepo
-                                .createQueryBuilder('payment')
-                                .where('payment.userId = :userId',{userId})
-                                .andWhere('payment.active = TRUE')
-                                .getMany();
-    
-        const expiredIds = [];
-        const activePayments = [];
-        payments.forEach(payment=>{
-            const tim = new Date().getTime() - new Date(payment.updated_at).getTime();
-            if(tim/(86400*1000) > 30){
-                expiredIds.push(payment.sessionId);
-            }else{
-                activePayments.push(payment);
-            }
-        });
-        console.log(expiredIds);
-        if(expiredIds.length>0){
-            this.updatePaymentInactive(expiredIds);        
-        }   
-        return activePayments;
-    }
-
-    async hasVideoSubscription(userId:string, groupId:VIDEO_GROUPS){
-        
-    }
-
 
 }

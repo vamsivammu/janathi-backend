@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Answer } from 'src/answers/models/answer.entity';
 import { AnswersService } from 'src/answers/service/answers.service';
@@ -6,10 +6,12 @@ import { AttemptsService } from 'src/attempts/service/attempts.service';
 import { GROUPS } from 'src/chapters/models/chapters.interface';
 import { ChoicesService } from 'src/choices/service/choices.service';
 import { PaperConfig, SectionConfig } from 'src/papers/dto/paper.enum';
+import { planTitles, QUIZ_PLAN_MAP } from 'src/payments/dto/payment.enum';
 import { NewQuestionDto } from 'src/questions/dto/NewQuestion.dto';
 import { Question } from 'src/questions/models/question.entity';
 import { QuestionsService } from 'src/questions/service/questions.service';
 import { S3UploaderService } from 'src/s3-uploader/s3-uploader.service';
+import { SubscriptionViewService } from 'src/subscription-view/service/subscription-view.service';
 import { UserRole } from 'src/user/models/user.interface';
 import { Repository } from 'typeorm';
 import { NewAttemptDto } from '../dto/NewAttempt.dto';
@@ -26,7 +28,8 @@ export class QuizService {
         private answerService:AnswersService,
         private choiceService:ChoicesService,
         private attemptsService:AttemptsService,
-        private s3UploaderService:S3UploaderService
+        private s3UploaderService:S3UploaderService,
+        private subscriptionsViewService:SubscriptionViewService
     ){  }
 
     async create(quiz:ICreateQuiz){
@@ -124,6 +127,16 @@ export class QuizService {
                 throw new BadRequestException(err);
             }
         }
+    }
+
+    async hasAttemptAccess(quizId:string,userId:string){
+        const quizData = await this.quizRepo.findOneOrFail({id:quizId});
+        const requiredPlan = QUIZ_PLAN_MAP[quizData.category];
+        const activeSubscriptions = await this.subscriptionsViewService.getActiveSubscription(userId,requiredPlan);
+        if(activeSubscriptions.length==1){
+            return true;
+        }
+        throw new ForbiddenException(`You need to purchase ${planTitles[requiredPlan]}`);
     }
 
     async addQuestion(id:string,question:NewQuestionDto,files:{'qimages[]':Express.Multer.File[],'choices[]':Express.Multer.File[]}):Promise<Question>{

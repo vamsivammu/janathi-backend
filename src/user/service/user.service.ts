@@ -1,6 +1,7 @@
 import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentsService } from 'src/payments/service/payments.service';
+import { SubscriptionViewService } from 'src/subscription-view/service/subscription-view.service';
 import { Repository } from 'typeorm';
 import { User } from '../models/user.entity';
 import { IUser } from '../models/user.interface';
@@ -10,8 +11,7 @@ export class UserService {
     constructor(
         @InjectRepository(User)
         private userRepository:Repository<User>,
-        @Inject(forwardRef(()=>PaymentsService))
-        private paymentsService:PaymentsService
+        private subscriptionsViewService:SubscriptionViewService
     ){  }
 
     async findOne(id:string):Promise<IUser>{
@@ -19,7 +19,7 @@ export class UserService {
         .createQueryBuilder('user')
         .where('user.id = :id',{id})
         .getOne();
-        user.payments = await this.paymentsService.getActiveSubscriptionDetails(user.id);
+        user.subscriptionInfos = await this.subscriptionsViewService.getActiveSubscriptionDetails(user.id);
         return user;
     }
 

@@ -12,6 +12,7 @@ import { S3UploaderService } from 'src/s3-uploader/s3-uploader.service';
 import { UserRole } from 'src/user/models/user.interface';
 import { NewAttemptDto } from '../dto/NewAttempt.dto';
 import { NewQuizDto } from '../dto/NewQuiz.dto';
+import { QuizGuard } from '../guards/quiz.guard';
 import { Quiz } from '../models/quiz.entity';
 import { IQuiz, QUIZ_TYPE } from '../models/quiz.interface';
 import { QuizService } from '../service/quiz.service';
@@ -71,6 +72,7 @@ export class QuizController {
 
 
     @Post('/attempt/:quizId')
+    @UseGuards(QuizGuard)
     @Roles(UserRole.USER)
     attemptQuiz(@Param('quizId',ParseUUIDPipe) quizId:string,@Req() req:Request, @Body() newAttempt:NewAttemptDto){
         return this.quizService.attemptQuiz(quizId,req.user['id'],newAttempt);        

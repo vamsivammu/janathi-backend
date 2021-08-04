@@ -7,14 +7,15 @@ import { configService } from 'src/config/config.service';
 import { NewVideo } from '../dto/NewVideo.dto';
 import { Chapter } from 'src/chapters/models/chapter.entity';
 import { PaymentsService } from 'src/payments/service/payments.service';
-import { VideoPlanAccess } from 'src/payments/dto/payment.enum';
+import { planTitles, VideoPlanAccess, VIDEO_PLAN_MAP } from 'src/payments/dto/payment.enum';
+import { SubscriptionViewService } from 'src/subscription-view/service/subscription-view.service';
 
 @Injectable()
 export class VideosService {
     constructor(
         @InjectRepository(Video)
         private videoRepo:Repository<Video>,
-        private paymentsService:PaymentsService,
+        private subscriptionViewService:SubscriptionViewService,
     ){  }
 
     async getVideo(id:string){
@@ -68,17 +69,13 @@ export class VideosService {
         if(videoInfo.isFree){
             return true;
         }
-        const activeSubscriptions = await this.paymentsService.getActiveSubscriptions(userId);
-        let hasAccess = false;
-        for(const subscription of activeSubscriptions){
-            if(VideoPlanAccess[subscription].includes(videoInfo.chapter.groupId)){
-                hasAccess = true;
-                break;
-            }
+        const requiredPlan = VIDEO_PLAN_MAP[videoInfo.chapter.groupId];
+        const activeSubscriptions = await this.subscriptionViewService.getActiveSubscription(userId,requiredPlan);
+        
+        if(activeSubscriptions.length==1){
+            return true;
         }
-        if(!hasAccess){
-            throw new ForbiddenException(`You need to purchase video plan`);
-        }
-        return hasAccess;
+        throw new ForbiddenException(`You need to purchase ${planTitles[requiredPlan]}`);
+        
     }
 }
