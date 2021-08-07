@@ -35,6 +35,6 @@ export class Answer extends SharedProps{
     @Column()
     quizId:string;
 
-    @Column()
+    @Column({nullable:true})
     paperId:PAPER;
 }
