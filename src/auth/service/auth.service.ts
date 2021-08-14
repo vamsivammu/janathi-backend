@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/user/models/user.entity';
 import { configService } from 'src/config/config.service';
 import * as nodemailer from 'nodemailer';
+import { UserRole } from 'src/user/models/user.interface';
 @Injectable()
 export class AuthService {
     transport:any;
@@ -74,7 +75,10 @@ export class AuthService {
         const {id,...rest} = userData;
         const hash = await bcrypt.hash(id+email,10);
         await this.userService.updateResetHash(email,hash);
-        const link = `${configService.getStripeRedirectUrl()}/reset-password/${hash}`;
+        let link = `${configService.getStripeRedirectUrl()}/reset-password/${hash}`;
+        if(userData.role==UserRole.ADMIN){
+            link = `https://admin.mandrooacademy.com/reset-password/${hash}`;
+        }
         this.sendResetEmail(email,link);
     }
 
