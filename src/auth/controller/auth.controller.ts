@@ -43,7 +43,17 @@ export class AuthController {
 
     @Post('logout')
     async logout(@Res({passthrough:true}) res:Response){
+        res.cookie('jid',null,{httpOnly:true,maxAge:0,sameSite:'lax',path:'/auth/refresh'});    
+    }
+
+    @Post('send-reset-password')
+    async sendResetPasswordLink(@Res({passthrough:true}) res:Response, @Body() user:{email:string}){
+        await this.authService.generateResetLink(user.email);
         res.cookie('jid',null,{httpOnly:true,maxAge:0,sameSite:'lax',path:'/auth/refresh'});
-        
+    }
+
+    @Post('reset-password')
+    async resetPassword(@Body() data:{hash:string,password:string}){
+        await this.authService.resetPassword(data.hash,data.password);
     }
 }

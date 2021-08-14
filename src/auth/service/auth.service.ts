@@ -5,10 +5,19 @@ import { IUserAuthentication, IUserBody, IUserSignup } from '../models/auth.inte
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/user/models/user.entity';
 import { configService } from 'src/config/config.service';
-
+import * as nodemailer from 'nodemailer';
 @Injectable()
 export class AuthService {
-    constructor(private userService:UserService,private jwtService:JwtService){   }
+    transport:any;
+    constructor(private userService:UserService,private jwtService:JwtService){ 
+        this.transport = nodemailer.createTransport({
+            service:'gmail',
+            auth:{
+              user:'janathiacademy@gmail.com',
+              pass:'Janathi@99'
+            }
+        })
+    }
 
     async signin(user:IUserAuthentication):Promise<{access_token:string,refresh_token:string}>{
         const userData = await this.userService.findOneByEmail(user.email);
@@ -59,5 +68,36 @@ export class AuthService {
         const refresh_token = await this.generateJwtRefresh(payload);
         return {access_token,refresh_token};
     }
+
+    async generateResetLink(email:string){
+        const userData = await this.userService.findOneByEmail(email);
+        const {id,...rest} = userData;
+        const hash = await bcrypt.hash({id,email},10);
+        await this.userService.updateResetHash(email,hash);
+        const link = `${configService.getStripeRedirectUrl()}/reset-password/${hash}`;
+        this.sendResetEmail(email,link);
+    }
+
+    async sendResetEmail(email:string,link:string){
+        var opts = {
+            from:'Mandroo Academy',
+            to:email.trim(),
+            subject:'Reset password link',
+            text:`Click on the link to reset your password. ${link}`
+        }
+        this.transport.sendMail(opts,(err,info)=>{
+            if(err){
+                console.log(err);     
+            }else{
+                console.log("Email sent")
+            }
+        })
+    }
+
+    async resetPassword(hash:string,password:string){
+        const hashedPassword = await bcrypt.hash(password,10);
+        await this.userService.resetPassword(hash,hashedPassword);
+    }
+
 
 }

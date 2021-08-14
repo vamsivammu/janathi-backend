@@ -58,5 +58,12 @@ export class UserService {
         }
     }
 
+    async updateResetHash(email:string,hash:string){
+        this.userRepository.update({email},{resetHash:hash})
+    }
+
+    async resetPassword(hash:string,password:string){
+        this.userRepository.update({resetHash:hash},{password,resetHash:null})
+    }
     
 }

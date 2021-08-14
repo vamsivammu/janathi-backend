@@ -22,6 +22,9 @@ export class User{
     @Column({select:false})
     password:string;
 
+    @Column({select:false,nullable:true})
+    resetHash:string;
+
     @Column({
         type:'enum',
         enum:UserRole,
