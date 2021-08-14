@@ -72,7 +72,7 @@ export class AuthService {
     async generateResetLink(email:string){
         const userData = await this.userService.findOneByEmail(email);
         const {id,...rest} = userData;
-        const hash = await bcrypt.hash({id,email},10);
+        const hash = await bcrypt.hash(id+email,10);
         await this.userService.updateResetHash(email,hash);
         const link = `${configService.getStripeRedirectUrl()}/reset-password/${hash}`;
         this.sendResetEmail(email,link);
@@ -89,6 +89,7 @@ export class AuthService {
             if(err){
                 console.log(err);     
             }else{
+                console.log(info)
                 console.log("Email sent")
             }
         })
@@ -96,7 +97,11 @@ export class AuthService {
 
     async resetPassword(hash:string,password:string){
         const hashedPassword = await bcrypt.hash(password,10);
-        await this.userService.resetPassword(hash,hashedPassword);
+        const updatedResponse = await this.userService.resetPassword(hash,hashedPassword);
+        // console.log(updatedResponse.affected)
+        if(!updatedResponse.affected){
+            throw new BadRequestException("The reset link has been expired")
+        }
     }
 
 

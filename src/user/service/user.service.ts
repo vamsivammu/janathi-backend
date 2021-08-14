@@ -63,7 +63,7 @@ export class UserService {
     }
 
     async resetPassword(hash:string,password:string){
-        this.userRepository.update({resetHash:hash},{password,resetHash:null})
+        return this.userRepository.update({resetHash:hash},{password,resetHash:null})
     }
     
 }
